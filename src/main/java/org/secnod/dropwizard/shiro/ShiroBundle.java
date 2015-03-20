@@ -1,9 +1,5 @@
 package org.secnod.dropwizard.shiro;
 
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -14,12 +10,15 @@ import javax.servlet.Filter;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.web.env.IniWebEnvironment;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.web.mgt.WebSecurityManager;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.secnod.shiro.jersey.AuthInjectionBinder;
 import org.secnod.shiro.jersey.AuthorizationFilterFeature;
 import org.secnod.shiro.jersey.SubjectFactory;
+
+import io.dropwizard.ConfiguredBundle;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 
 /**
  * A Dropwizard bundle for Apache Shiro.
@@ -65,9 +64,11 @@ public abstract class ShiroBundle<T> implements ConfiguredBundle<T> {
             @Override
             public void init() throws Exception {
                 Collection<Realm> realms = createRealms(configuration);
-                WebSecurityManager securityManager = realms.isEmpty()
-                        ? shiroEnv.getWebSecurityManager()
-                        : new DefaultWebSecurityManager(realms);
+                DefaultWebSecurityManager securityManager =
+                        (DefaultWebSecurityManager) shiroEnv.getWebSecurityManager();
+                if (!realms.isEmpty()) {
+                    securityManager.setRealms(realms);
+                }
                 setSecurityManager(securityManager);
                 setFilterChainResolver(shiroEnv.getFilterChainResolver());
             }
